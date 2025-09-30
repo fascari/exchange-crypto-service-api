@@ -14,6 +14,7 @@ func main() {
 	dependencies := deps.New(app)
 
 	modules.User(app, dependencies)
+	modules.Account(app, dependencies)
 
 	fmt.Println("Server starting on :8080")
 	log.Fatal(http.ListenAndServe(":8080", app.Router))
