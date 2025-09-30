@@ -15,6 +15,7 @@ func setupApp() infra.App {
 	app := modules.NewApp()
 	dependencies := deps.New(app)
 
+	modules.Health(app)
 	modules.User(app, dependencies)
 	modules.Account(app, dependencies)
 	modules.Transaction(app, dependencies)
