@@ -27,3 +27,23 @@ func (r Repository) Create(ctx context.Context, account domain.Account) (domain.
 
 	return model.toDomain(), nil
 }
+
+func (r Repository) Update(ctx context.Context, account domain.Account) error {
+	model := fromDomain(account)
+
+	if err := r.db.WithContext(ctx).Save(&model).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r Repository) FindByID(ctx context.Context, id uint) (domain.Account, error) {
+	var model Account
+
+	if err := r.db.WithContext(ctx).First(&model, id).Error; err != nil {
+		return domain.Account{}, err
+	}
+
+	return model.toDomain(), nil
+}

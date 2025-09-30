@@ -7,9 +7,11 @@ import (
 )
 
 type Account struct {
+	ID         uint    `gorm:"primaryKey"`
+	UserID     uint    `gorm:"not null"`
+	ExchangeID uint    `gorm:"not null"`
+	Balance    float64 `gorm:"not null;default:0"`
 	gorm.Model
-	UserID     uint `gorm:"not null" json:"user_id"`
-	ExchangeID uint `gorm:"not null" json:"exchange_id"`
 }
 
 func (Account) TableName() string {
@@ -18,8 +20,10 @@ func (Account) TableName() string {
 
 func fromDomain(account domain.Account) Account {
 	return Account{
+		ID:         account.ID,
 		UserID:     account.UserID,
 		ExchangeID: account.ExchangeID,
+		Balance:    account.Balance,
 	}
 }
 
@@ -28,5 +32,6 @@ func (a Account) toDomain() domain.Account {
 		ID:         a.ID,
 		UserID:     a.UserID,
 		ExchangeID: a.ExchangeID,
+		Balance:    a.Balance,
 	}
 }

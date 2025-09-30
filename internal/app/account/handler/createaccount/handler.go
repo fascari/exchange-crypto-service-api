@@ -13,11 +13,9 @@ import (
 
 const Path = "/accounts"
 
-type (
-	Handler struct {
-		useCase createaccount.UseCase
-	}
-)
+type Handler struct {
+	useCase createaccount.UseCase
+}
 
 func NewHandler(useCase createaccount.UseCase) Handler {
 	return Handler{

@@ -9,10 +9,10 @@ import (
 )
 
 type userModel struct {
-	gorm.Model
-	Username       string    `gorm:"type:varchar(255);not null;uniqueIndex" json:"username"`
+	Username       string    `gorm:"type:varchar(255);not null;uniqueIndex"`
 	DateOfBirth    time.Time `gorm:"type:date;not null" json:"date_of_birth"`
-	DocumentNumber string    `gorm:"type:varchar(255);not null;uniqueIndex" json:"document_number"`
+	DocumentNumber string    `gorm:"type:varchar(255);not null;uniqueIndex"`
+	gorm.Model
 }
 
 func (userModel) TableName() string {
