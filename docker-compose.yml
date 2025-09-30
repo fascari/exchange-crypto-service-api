@@ -1,0 +1,29 @@
+services:
+  liquibase:
+    image: liquibase/liquibase:4.29.2
+    container_name: liquibase429
+    depends_on:
+      - postgres
+    volumes:
+      - ./liquibase/changelog:/liquibase/changelog
+    command: [ "--logLevel=debug", "--defaultsFile=/liquibase/changelog/local.properties", "status" ]
+    networks:
+      - app_network
+
+  postgres:
+    image: postgres:17
+    container_name: postgres17
+    environment:
+      POSTGRES_USER: owner
+      POSTGRES_PASSWORD: owner123
+      POSTGRES_DB: exchange_crypto_local
+    ports:
+      - "5435:5432"
+    volumes:
+      - ./liquibase/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
