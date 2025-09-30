@@ -10,6 +10,8 @@ import (
 	userdomain "exchange-crypto-service-api/internal/app/user/domain"
 )
 
+//go:generate mockery --all
+
 type (
 	Repository interface {
 		Create(ctx context.Context, account domain.Account) (domain.Account, error)

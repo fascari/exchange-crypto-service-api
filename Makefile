@@ -30,9 +30,11 @@ down:
 	docker-compose down
 
 test:
-	@rm -rf coverage && mkdir -p coverage
 	@echo "🧪 Running tests..."
-	@GIN_MODE=test TESTING=true go test -short $(shell go list ./internal/... ./pkg/... | grep -v -E 'test|mocks') -shuffle=on -failfast -cover -test.gocoverdir=coverage
+	@go test -v -short $(shell go list ./internal/... ./pkg/... | grep -v -E 'test|mocks') -shuffle=on -failfast -coverprofile=coverage.out
+	@echo "📊 Generating coverage report..."
+	@go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
 
 migrate:
 	docker-compose run --rm liquibase liquibase --logLevel=info --defaultsFile=/liquibase/changelog/local.properties update

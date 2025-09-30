@@ -8,6 +8,7 @@ A API for cryptocurrency exchange operations, built in Go, following Clean Archi
 - **Liquibase** (database migration)
 - **Docker & Docker Compose** (containerization and orchestration)
 - **OpenTelemetry** (tracing and observability)
+- **Mockery** (mock generation for testing)
 - **Makefile** (command automation)
 
 ## Project Structure
@@ -77,3 +78,59 @@ The application includes comprehensive observability through OpenTelemetry integ
 Once you start the application with `make run-local`, the Jaeger UI will be available at:
 
 **http://localhost:16686**
+
+## Testing
+
+### Unit Tests
+Run all unit tests with coverage:
+```bash
+make test
+```
+
+### Mockery - Mock Generation
+
+The project uses [Mockery](https://vektra.github.io/mockery/) to automatically generate mocks for interfaces used in testing.
+
+#### Installation
+```bash
+go install github.com/vektra/mockery/v2@latest
+```
+
+#### Configuration
+The project includes a `.mockery.yaml` configuration file:
+```yaml
+with-expecter: true
+case: snake
+disable-version-string: true
+```
+
+#### Generating Mocks
+To generate mocks for all interfaces:
+```bash
+mockery --all
+```
+
+To generate mocks for a specific interface:
+```bash
+mockery --name=Repository --dir=./internal/app/account/usecase/createaccount
+```
+
+#### Using Generated Mocks
+The mocks are automatically generated in `mocks/` directories within each package. Example usage:
+
+```go
+// Create mock instance
+mockRepo := mocks.NewRepository(t)
+
+// Set expectations using EXPECT() syntax
+mockRepo.EXPECT().Create(mock.Anything, mock.AnythingOfType("domain.Account")).Return(expectedAccount, nil)
+
+// Use mock in tests
+useCase := createaccount.New(mockRepo, mockUserRepo, mockExchangeRepo)
+result, err := useCase.Execute(context.Background(), inputAccount)
+```
+
+#### Mock Location
+- **Handler tests**: Use mocks from `usecase/<module>/mocks/`
+- **UseCase tests**: Mock repository interfaces directly
+- **Repository tests**: Use real database (SQLite in-memory for tests)
