@@ -3,6 +3,7 @@ package domain
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 const (
@@ -18,6 +19,12 @@ type (
 		AccountID uint
 		Type      TransactionType
 		Amount    float64
+	}
+
+	DailyTransaction struct {
+		Exchange    string
+		Date        time.Time
+		TotalAmount float64
 	}
 )
 

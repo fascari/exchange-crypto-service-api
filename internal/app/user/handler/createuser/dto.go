@@ -27,7 +27,7 @@ func (p InputPayload) Validate() error {
 }
 
 func (p InputPayload) ToDomain() (domain.User, error) {
-	dateOfBirth, err := time.Parse("2006-01-02", p.DateOfBirth)
+	dateOfBirth, err := time.Parse(time.DateOnly, p.DateOfBirth)
 	if err != nil {
 		return domain.User{}, err
 	}
@@ -43,7 +43,7 @@ func ToOutputPayload(user domain.User) OutputPayload {
 	return OutputPayload{
 		ID:             user.ID,
 		Username:       user.Username,
-		DateOfBirth:    user.DateOfBirth.Format("2006-01-02"),
+		DateOfBirth:    user.DateOfBirth.Format(time.DateOnly),
 		DocumentNumber: user.DocumentNumber,
 	}
 }
