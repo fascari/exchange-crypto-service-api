@@ -5,25 +5,16 @@ import (
 	"log"
 	"net/http"
 
-	"exchange-crypto-service-api/internal/config"
-	"exchange-crypto-service-api/internal/database"
-
-	"github.com/gorilla/mux"
+	"exchange-crypto-service-api/cmd/api/modules"
+	"exchange-crypto-service-api/internal/deps"
 )
 
 func main() {
-	dbConfig, err := config.LoadDatabaseConfig()
-	if err != nil {
-		log.Fatal("Failed to load database config:", err)
-	}
+	app := modules.NewApp()
+	dependencies := deps.New(app)
 
-	_, err = database.ConnectPostgres(dbConfig)
-	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
-	}
-
-	r := mux.NewRouter()
+	modules.User(app, dependencies)
 
 	fmt.Println("Server starting on :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(":8080", app.Router))
 }
