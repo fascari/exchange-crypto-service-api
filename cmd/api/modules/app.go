@@ -4,14 +4,24 @@ import (
 	"exchange-crypto-service-api/internal/config"
 	"exchange-crypto-service-api/internal/database"
 	"exchange-crypto-service-api/internal/infra"
+	"exchange-crypto-service-api/internal/middleware"
 	"exchange-crypto-service-api/pkg/logger"
+	"exchange-crypto-service-api/pkg/telemetry"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
 
+const serviceName = "exchange-crypto-service-api"
+
 func NewApp() infra.App {
 	logger.Init()
+
+	tp, err := telemetry.InitTracer(serviceName)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to initialize tracer")
+		panic(err)
+	}
 
 	dbConfig, err := config.LoadDatabaseConfig()
 	if err != nil {
@@ -25,5 +35,13 @@ func NewApp() infra.App {
 		panic(err)
 	}
 
-	return infra.App{Router: mux.NewRouter(), DB: db}
+	router := mux.NewRouter()
+
+	middleware.SetupOTEL(router, serviceName)
+
+	return infra.App{
+		Router:         router,
+		DB:             db,
+		TracerProvider: tp,
+	}
 }
