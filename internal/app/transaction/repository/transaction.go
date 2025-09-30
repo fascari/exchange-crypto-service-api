@@ -21,15 +21,6 @@ func (transactionModel) TableName() string {
 	return "transactions"
 }
 
-func (t transactionModel) toDomain() domain.Transaction {
-	return domain.Transaction{
-		ID:        t.ID,
-		AccountID: t.AccountID,
-		Amount:    t.Amount,
-		Type:      domain.TransactionType(t.Type),
-	}
-}
-
 func fromDomain(transaction domain.Transaction) transactionModel {
 	return transactionModel{
 		ID:        transaction.ID,

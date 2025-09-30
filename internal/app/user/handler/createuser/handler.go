@@ -2,12 +2,12 @@ package createuser
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"exchange-crypto-service-api/internal/app/user/usecase/createuser"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 )
 
 const Path = "/users"
@@ -55,6 +55,6 @@ func (h Handler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.NewEncoder(w).Encode(ToOutputPayload(createdUser)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal("Failed to encode response:", err)
+		log.Error().Err(err).Msg("Failed to encode response")
 	}
 }

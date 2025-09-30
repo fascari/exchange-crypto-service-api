@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -17,6 +16,6 @@ func main() {
 	modules.Account(app, dependencies)
 	modules.Transaction(app, dependencies)
 
-	fmt.Println("Server starting on :8080")
+	log.Println("server starting on :8080")
 	log.Fatal(http.ListenAndServe(":8080", app.Router))
 }
