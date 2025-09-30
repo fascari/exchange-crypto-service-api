@@ -9,7 +9,7 @@ import (
 )
 
 func (uc UseCase) Withdrawal(ctx context.Context, accountID uint, amount float64) error {
-	if err := uc.validateAmount(amount); err != nil {
+	if err := validateAmount(amount); err != nil {
 		return err
 	}
 
@@ -18,7 +18,7 @@ func (uc UseCase) Withdrawal(ctx context.Context, accountID uint, amount float64
 		return err
 	}
 
-	if err := uc.validateBalance(account, amount); err != nil {
+	if err := validateBalance(account, amount); err != nil {
 		return err
 	}
 
@@ -33,7 +33,7 @@ func (uc UseCase) Withdrawal(ctx context.Context, accountID uint, amount float64
 	return uc.createTransaction(ctx, accountID, amount, domain.Withdrawal)
 }
 
-func (uc UseCase) validateBalance(account accountdomain.Account, amount float64) error {
+func validateBalance(account accountdomain.Account, amount float64) error {
 	if account.Balance < amount {
 		return fmt.Errorf("withdrawal amount %.2f exceeds account balance of %.2f", amount, account.Balance)
 	}

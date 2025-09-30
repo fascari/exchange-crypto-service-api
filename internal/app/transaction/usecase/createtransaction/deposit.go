@@ -7,7 +7,7 @@ import (
 )
 
 func (uc UseCase) Deposit(ctx context.Context, accountID uint, amount float64) error {
-	if err := uc.validateAmount(amount); err != nil {
+	if err := validateAmount(amount); err != nil {
 		return err
 	}
 

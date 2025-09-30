@@ -30,12 +30,7 @@ func (r Repository) Create(ctx context.Context, account domain.Account) (domain.
 
 func (r Repository) Update(ctx context.Context, account domain.Account) error {
 	model := fromDomain(account)
-
-	if err := r.db.WithContext(ctx).Save(&model).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Save(&model).Error
 }
 
 func (r Repository) FindByID(ctx context.Context, id uint) (domain.Account, error) {

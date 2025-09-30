@@ -7,7 +7,7 @@ import (
 	"exchange-crypto-service-api/internal/infra"
 )
 
-func Transaction(app infra.App, deps deps.Dependencies) {
-	useCase := createtrantuc.New(deps.Repositories.Account, deps.Repositories.Exchange, deps.Repositories.Transaction)
+func Transaction(app infra.App, dep deps.Dependencies) {
+	useCase := createtrantuc.New(dep.Repositories.Account, dep.Repositories.Exchange, dep.Repositories.Transaction)
 	createtransaction.RegisterEndpoint(app.Router, createtransaction.NewHandler(useCase))
 }

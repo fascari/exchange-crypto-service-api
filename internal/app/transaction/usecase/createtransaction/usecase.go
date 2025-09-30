@@ -51,7 +51,7 @@ func (uc UseCase) Execute(ctx context.Context, transactionType domain.Transactio
 	return errors.New("invalid transaction type")
 }
 
-func (uc UseCase) validateAmount(amount float64) error {
+func validateAmount(amount float64) error {
 	if amount <= 0 {
 		return errors.New("amount must be greater than 0")
 	}

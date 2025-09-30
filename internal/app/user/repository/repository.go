@@ -42,3 +42,31 @@ func (r Repository) FindByID(ctx context.Context, id uint) (domain.User, error) 
 
 	return user.toDomain(), nil
 }
+
+func (r Repository) FindUserBalances(ctx context.Context, userID uint) (domain.UserBalance, error) {
+	var models []userExchangeBalanceModel
+
+	err := r.db.WithContext(ctx).
+		Table("user_exchange_balances").
+		Select(`
+			   user_id,
+			   username,
+			   exchange_name,
+			   balance,
+			   SUM(balance) OVER (PARTITION BY user_id) as total_balance,
+			   created_at,
+			   updated_at
+			  `).
+		Where("user_id = ?", userID).
+		Find(&models).Error
+
+	if err != nil {
+		return domain.UserBalance{}, err
+	}
+
+	if len(models) == 0 {
+		return domain.UserBalance{}, errors.New("user has no balances")
+	}
+
+	return toDomain(models), nil
+}

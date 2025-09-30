@@ -7,7 +7,7 @@ import (
 	"exchange-crypto-service-api/internal/infra"
 )
 
-func Account(app infra.App, deps deps.Dependencies) {
-	useCase := createaccountuc.New(deps.Repositories.Account, deps.Repositories.User, deps.Repositories.Exchange)
+func Account(app infra.App, dep deps.Dependencies) {
+	useCase := createaccountuc.New(dep.Repositories.Account, dep.Repositories.User, dep.Repositories.Exchange)
 	createaccount.RegisterEndpoint(app.Router, createaccount.NewHandler(useCase))
 }
