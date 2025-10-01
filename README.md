@@ -8,41 +8,13 @@ A API for cryptocurrency exchange operations, built in Go, following Clean Archi
 - **Liquibase** (database migration)
 - **Docker & Docker Compose** (containerization and orchestration)
 - **OpenTelemetry** (tracing and observability)
+- **JWT Authentication** (secure token-based authentication)
 - **Rate Limiting** (DDoS protection and traffic control)
 - **Mockery** (mock generation for testing)
 - **golangci-lint** (code linting and static analysis)
 - **Makefile** (command automation)
 
-## Features
-
-### 🛡️ Rate Limiting
-The API includes a built-in rate limiter to protect against DDoS attacks and ensure service stability under heavy load:
-
-- **IP-based rate limiting**: 10 requests per second per IP (configurable)
-- **Burst protection**: Allows bursts up to 20 requests (configurable)
-- **Automatic cleanup**: Memory-efficient with automatic cleanup of inactive limiters
-- **Flexible configuration**: Easily configurable via `env.yaml`
-- **Production-ready**: Thread-safe and thoroughly tested
-
-📖 **[Complete Rate Limiter Documentation](./RATE_LIMITER.md)**
-
-## Project Structure
-- `cmd/api/main.go`: application entry point
-- `internal/app`: business modules (account, exchange, transaction, user)
-- `internal/config`: configurations
-- `internal/database`: database connection
-- `liquibase/`: database scripts and migrations
-- `docker-compose.yml`: services orchestration
-- `Makefile`: automated commands
-
-## Configuration
-- Environment variables can be defined in `env.yaml`
-
-## Database
-- PostgreSQL is used as the main database.
-- Automatic migrations via Liquibase (`liquibase/changelog/migrations/*.sql`).
-
-## Basic Commands
+## Quick Start
 
 ### Using Makefile
 ```bash
@@ -71,145 +43,36 @@ make down
 make help
 ```
 
-## Main Endpoints
-- **POST /api/v1/users**: create user
-- **GET /api/v1/users/{userId}/balance**: check balance
-- **POST /api/v1/accounts**: create account
-- **POST /api/v1/transactions**: create transaction (deposit/withdrawal)
-- **GET /api/v1/transactions/daily?date=YYYY-MM-DD**: get daily transactions
-- **GET /health**: health check
+## Project Structure
+- `cmd/api/main.go`: application entry point
+- `internal/app`: business modules (account, exchange, transaction, user)
+- `internal/config`: configurations
+- `internal/database`: database connection
+- `liquibase/`: database scripts and migrations
+- `docker-compose.yml`: services orchestration
+- `Makefile`: automated commands
 
-## Postman Collection
+## Configuration
+- Environment variables can be defined in `env.yaml`
 
-The project includes a comprehensive Postman collection with example requests for all API endpoints.
-- `exchange-crypto.postman_collection.json` file from the project root
+## Database
+- PostgreSQL is used as the main database
+- Automatic migrations via Liquibase (`liquibase/changelog/migrations/*.sql`)
 
-## Telemetry & Observability
+## Documentation
 
-The application includes comprehensive observability through OpenTelemetry integration with Jaeger for distributed tracing.
+📚 **Detailed Documentation:**
+- **[Authentication (JWT)](./docs/AUTHENTICATION.md)** - JWT token generation, validation, and usage
+- **[API Documentation](./docs/API.md)** - Endpoints, examples, and Postman collection
+- **[Development Guide](./docs/DEVELOPMENT.md)** - Testing, linting, and mock generation
+- **[Observability](./docs/OBSERVABILITY.md)** - Monitoring, tracing, and rate limiting
 
-### Architecture
-- **OpenTelemetry Collector**: Collects and processes telemetry data
-- **Jaeger**: Stores and visualizes distributed traces
-- **Automatic Instrumentation**: HTTP requests, database operations, and custom spans
-
-### Accessing Jaeger UI
-
-Once you start the application with `make run-local`, the Jaeger UI will be available at:
-
-**http://localhost:16686**
-
-## Testing
-
-### Unit Tests
-Run all unit tests with coverage:
+## Health Check
 ```bash
-make test
+curl http://localhost:8080/health
 ```
 
-### Code Linting with golangci-lint
-
-The project uses [golangci-lint](https://golangci-lint.run/) for code linting and static analysis to maintain code quality and consistency.
-
-#### Installation
-
-**Using Go install:**
-```bash
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-```
-
-**Using Homebrew (macOS):**
-```bash
-brew install golangci-lint
-```
-
-**Using Binary (Linux/Windows):**
-```bash
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
-```
-
-#### Configuration
-
-The project includes a `.golangci.yml` configuration file that defines:
-- **Enabled linters**: Code quality, style, and security checks
-- **Disabled rules**: Project-specific exceptions
-- **File exclusions**: Generated files, vendor directories
-- **Severity levels**: Error vs warning classifications
-
-#### Running Linter
-
-To run the linter on the entire project:
-```bash
-make lint-code
-```
-
-To run golangci-lint directly:
-```bash
-# Run with default configuration
-golangci-lint run
-
-# Run with custom config file
-golangci-lint run --config=.golangci.yml
-
-# Run on specific directories
-golangci-lint run ./internal/... ./pkg/...
-
-# Run with verbose output
-golangci-lint run --verbose
-```
-
-#### Common Linting Issues
-
-- **Unused variables/imports**: Remove or use underscore `_` for intentionally unused
-- **Naming conventions**: Use camelCase for private, PascalCase for public
-- **Error handling**: Always check and handle errors appropriately
-- **Code complexity**: Keep functions simple and focused
-- **Documentation**: Add comments for exported functions and types
-
-### Mockery - Mock Generation
-
-The project uses [Mockery](https://vektra.github.io/mockery/) to automatically generate mocks for interfaces used in testing.
-
-#### Installation
-```bash
-go install github.com/vektra/mockery/v2@latest
-```
-
-#### Configuration
-The project includes a `.mockery.yaml` configuration file:
-```yaml
-with-expecter: true
-case: snake
-disable-version-string: true
-```
-
-#### Generating Mocks
-To generate mocks for all interfaces:
-```bash
-mockery --all
-```
-
-To generate mocks for a specific interface:
-```bash
-mockery --name=Repository --dir=./internal/app/account/usecase/createaccount
-```
-
-#### Using Generated Mocks
-The mocks are automatically generated in `mocks/` directories within each package. Example usage:
-
-```go
-// Create mock instance
-mockRepo := mocks.NewRepository(t)
-
-// Set expectations using EXPECT() syntax
-mockRepo.EXPECT().Create(mock.Anything, mock.AnythingOfType("domain.Account")).Return(expectedAccount, nil)
-
-// Use mock in tests
-useCase := createaccount.New(mockRepo, mockUserRepo, mockExchangeRepo)
-result, err := useCase.Execute(context.Background(), inputAccount)
-```
-
-#### Mock Location
-- **Handler tests**: Use mocks from `usecase/<module>/mocks/`
-- **UseCase tests**: Mock repository interfaces directly
-- **Repository tests**: Use real database (SQLite in-memory for tests)
+## Getting Help
+- Check the Makefile: `make help`
+- Review the documentation files in `/docs`
+- Import the Postman collection for API examples

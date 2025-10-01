@@ -1,18 +1,35 @@
-# Rate Limiter Implementation
+# Observability & Monitoring
 
-This document describes the rate limiter implementation for the cryptocurrency exchange API.
+## Telemetry & Observability
 
-## Features
+The application includes comprehensive observability through OpenTelemetry integration with Jaeger for distributed tracing.
 
-### 1. IP-based Rate Limiting
+### Architecture
+- **OpenTelemetry Collector**: Collects and processes telemetry data
+- **Jaeger**: Stores and visualizes distributed traces
+- **Automatic Instrumentation**: HTTP requests, database operations, and custom spans
+
+### Accessing Jaeger UI
+
+Once you start the application with `make run-local`, the Jaeger UI will be available at:
+
+**http://localhost:16686**
+
+## Rate Limiter Implementation
+
+The API includes a built-in rate limiter to protect against DDoS attacks and ensure service stability under heavy load.
+
+### Features
+
+#### IP-based Rate Limiting
 - Limits requests per IP address
 - Flexible configuration through `env.yaml`
 - Automatic cleanup of inactive limiters
 - Thread-safe for concurrent usage
 
-## Configuration
+### Configuration
 
-### Configuration via `env.yaml`
+#### Configuration via `env.yaml`
 Rate limiter configurations are loaded from the `env.yaml` file:
 
 ```yaml
@@ -22,29 +39,29 @@ RATE_LIMITER_BURST_SIZE: 20               # Allowed burst size
 RATE_LIMITER_CLEANUP_INTERVAL_MINUTES: 5  # Cleanup interval in minutes
 ```
 
-### Current Configuration
+#### Current Configuration
 The application is configured with:
 - **10 requests per second** per IP (configurable)
 - **Burst of 20 requests** (configurable)
 - **Automatic cleanup** every 5 minutes (configurable)
 
-### Default Values
+#### Default Values
 If the configuration file is not found or is invalid, the default values are:
 - `RequestsPerSecond`: 10
 - `BurstSize`: 20
 - `CleanupInterval`: 5 minutes
 
-## How It Works
+### How It Works
 
 The rate limiter uses a token bucket algorithm to manage request rates. Each IP address has its own token bucket, which refills at a rate defined by `RequestsPerSecond` and allows bursts up to `BurstSize`.
 
-### IP Headers
+#### IP Headers
 The rate limiter extracts the real client IP by checking:
 1. `X-Forwarded-For` (proxies/load balancers)
 2. `X-Real-IP` (alternative proxies)  
 3. `RemoteAddr` (direct connection)
 
-### Rate Limit Response
+#### Rate Limit Response
 When the limit is exceeded:
 ```http
 HTTP/1.1 429 Too Many Requests
@@ -56,9 +73,9 @@ Content-Type: application/json
 }
 ```
 
-## Customization
+### Customization
 
-### Changing Configuration
+#### Changing Configuration
 To modify the limits, edit the `env.yaml`:
 
 ```yaml
