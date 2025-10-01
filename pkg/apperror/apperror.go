@@ -1,8 +1,11 @@
 package apperror
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
 )
 
 type AppError struct {
@@ -32,4 +35,12 @@ func (e AppError) Error() string {
 
 func (e AppError) Unwrap() error {
 	return e.err
+}
+
+func WriteError(w http.ResponseWriter, statusCode int, err error) {
+	statusText := strings.ToUpper(strings.ReplaceAll(http.StatusText(statusCode), " ", "_"))
+	appErr := New(statusText, "%s", err.Error())
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	_ = json.NewEncoder(w).Encode(appErr)
 }

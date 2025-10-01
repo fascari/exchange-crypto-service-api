@@ -25,7 +25,7 @@ type (
 	}
 )
 
-func LoadDatabaseConfig() (Database, error) {
+func loadDatabaseConfig() (Database, error) {
 	viper.SetConfigName("env")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")

@@ -45,6 +45,20 @@ func (r Repository) FindByID(ctx context.Context, id uint) (domain.User, error) 
 	return user.toDomain(), nil
 }
 
+func (r Repository) FindByUsername(ctx context.Context, username string) (domain.User, error) {
+	var user userModel
+
+	err := r.db.WithContext(ctx).Where("username = ?", username).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return domain.User{}, errors.New("user not found")
+		}
+		return domain.User{}, err
+	}
+
+	return user.toDomain(), nil
+}
+
 func (r Repository) FindUserBalances(ctx context.Context, userID uint) (domain.UserBalance, error) {
 	var models []userExchangeBalanceModel
 	var result domain.UserBalance

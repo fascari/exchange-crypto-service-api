@@ -1,16 +1,92 @@
 {
 	"info": {
-		"_postman_id": "3e530ef9-bbcf-41b6-8e5d-0465bd59539b",
+		"_postman_id": "5925496f-aeb1-4a41-94a8-0f3670c6d27f",
 		"name": "exchange-crypto",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "38771873"
 	},
 	"item": [
 		{
-			"name": "users",
+			"name": "generate-token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"if (pm.response.code === 201) {",
+							"    const responseJson = pm.response.json();",
+							"    const token = responseJson.token;",
+							"    ",
+							"    if (token) {",
+							"        pm.collectionVariables.set(\"jwt_token\", token);",
+							"        pm.test(\"Token captured successfully\", function () {",
+							"            pm.expect(token).to.be.a('string');",
+							"            pm.expect(token.length).to.be.greaterThan(0);",
+							"        });",
+							"    } else {",
+							"        console.error(\"Token not found in response\");",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/tokens/generate/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tokens",
+						"generate",
+						"1"
+					]
+				},
+				"description": "Generate JWT token for user with ID 1. Change the user ID in the path as needed."
+			},
+			"response": []
+		},
+		{
+			"name": "users",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "POST",
 				"header": [
@@ -29,13 +105,15 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/users",
+					"raw": "http://localhost:8080/api/v1/users",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
+						"v1",
 						"users"
 					]
 				}
@@ -46,7 +124,14 @@
 			"name": "accounts",
 			"request": {
 				"auth": {
-					"type": "noauth"
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "POST",
 				"header": [
@@ -65,13 +150,15 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/accounts",
+					"raw": "http://localhost:8080/api/v1/accounts",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
+						"v1",
 						"accounts"
 					]
 				}
@@ -82,7 +169,14 @@
 			"name": "withdrawal",
 			"request": {
 				"auth": {
-					"type": "noauth"
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "POST",
 				"header": [
@@ -101,13 +195,15 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/transactions/withdrawal/accounts/4",
+					"raw": "http://localhost:8080/api/v1/transactions/withdrawal/accounts/4",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
+						"v1",
 						"transactions",
 						"withdrawal",
 						"accounts",
@@ -121,7 +217,14 @@
 			"name": "deposit",
 			"request": {
 				"auth": {
-					"type": "noauth"
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "POST",
 				"header": [
@@ -140,13 +243,15 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/transactions/deposit/accounts/5",
+					"raw": "http://localhost:8080/api/v1/transactions/deposit/accounts/5",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
+						"v1",
 						"transactions",
 						"deposit",
 						"accounts",
@@ -160,7 +265,14 @@
 			"name": "users-balance",
 			"request": {
 				"auth": {
-					"type": "noauth"
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "GET",
 				"header": [
@@ -170,13 +282,15 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost:8080/users/4/balance",
+					"raw": "http://localhost:8080/api/v1/users/4/balance",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
+						"v1",
 						"users",
 						"4",
 						"balance"
@@ -189,7 +303,14 @@
 			"name": "daily-transaction",
 			"request": {
 				"auth": {
-					"type": "noauth"
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "GET",
 				"header": [
@@ -199,24 +320,26 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost:8080/transactions/daily?start_date=2025-09-30&end_date=2025-09-30",
+					"raw": "http://localhost:8080/api/v1/transactions/daily?start_date=2025-10-01&end_date=2025-10-01",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
+						"v1",
 						"transactions",
 						"daily"
 					],
 					"query": [
 						{
 							"key": "start_date",
-							"value": "2025-09-30"
+							"value": "2025-10-01"
 						},
 						{
 							"key": "end_date",
-							"value": "2025-09-30"
+							"value": "2025-10-01"
 						}
 					]
 				}
@@ -244,6 +367,13 @@
 				}
 			},
 			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "jwt_token",
+			"value": "your-jwt-token-here",
+			"type": "string"
 		}
 	]
 }

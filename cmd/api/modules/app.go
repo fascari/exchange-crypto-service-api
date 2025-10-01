@@ -4,6 +4,7 @@ import (
 	"exchange-crypto-service-api/internal/config"
 	"exchange-crypto-service-api/internal/database"
 	"exchange-crypto-service-api/internal/infra"
+	"exchange-crypto-service-api/internal/jwt"
 	"exchange-crypto-service-api/pkg/logger"
 	"exchange-crypto-service-api/pkg/telemetry"
 
@@ -15,14 +16,22 @@ import (
 
 const serviceName = "exchange-crypto-service-api"
 
+type RouterSetup struct {
+	MainRouter *mux.Router
+	Router     *mux.Router
+}
+
 func NewApp() infra.App {
 	logger.Init()
-	tp := initTelemetry()
+	jwt.Initialize()
+
+	routerSetup := setupRouter()
 
 	return infra.App{
-		Router:         setupRouter(),
 		DB:             connectDB(),
-		TracerProvider: tp,
+		TracerProvider: initTelemetry(),
+		MainRouter:     routerSetup.MainRouter,
+		Router:         routerSetup.Router,
 	}
 }
 
@@ -35,17 +44,8 @@ func initTelemetry() *trace.TracerProvider {
 	return tp
 }
 
-func loadDBConfig() config.Database {
-	dbConfig, err := config.LoadDatabaseConfig()
-	if err != nil {
-		log.Error().Err(err).Msg("failed to load database config")
-		panic(err)
-	}
-	return dbConfig
-}
-
 func connectDB() *gorm.DB {
-	db, err := database.ConnectPostgres(loadDBConfig())
+	db, err := database.ConnectPostgres(config.LoadDatabase())
 	if err != nil {
 		log.Error().Err(err).Msg("failed to connect to database")
 		panic(err)
@@ -53,8 +53,14 @@ func connectDB() *gorm.DB {
 	return db
 }
 
-func setupRouter() *mux.Router {
+func setupRouter() RouterSetup {
 	router := mux.NewRouter()
-	setupMiddlewares(router, serviceName)
-	return router
+	apiV1Router := router.PathPrefix("/api/v1").Subrouter()
+
+	setupMiddlewares(apiV1Router, serviceName)
+
+	return RouterSetup{
+		MainRouter: router,
+		Router:     apiV1Router,
+	}
 }

@@ -9,6 +9,7 @@ import (
 )
 
 type App struct {
+	MainRouter     *mux.Router
 	Router         *mux.Router
 	DB             *gorm.DB
 	TracerProvider *trace.TracerProvider

@@ -24,13 +24,13 @@ type (
 	RateLimiter struct {
 		limiters map[string]*clientLimiter
 		mu       sync.RWMutex
-		config   *config.RateLimiterConfig
+		config   *config.RateLimiter
 	}
 )
 
-func newRateLimiterByIP(rateLimiterConfig *config.RateLimiterConfig) *RateLimiter {
+func newRateLimiterByIP(rateLimiterConfig *config.RateLimiter) *RateLimiter {
 	if rateLimiterConfig == nil {
-		defaultConfig := config.DefaultRateLimiterConfig()
+		defaultConfig := config.LoadRateLimiter()
 		rateLimiterConfig = &defaultConfig
 	}
 
@@ -114,11 +114,7 @@ func clientIP(r *http.Request) string {
 }
 
 func SetupRateLimiter(router *mux.Router) {
-	rateLimiterConfig, err := config.LoadRateLimiterConfig()
-	if err != nil {
-		log.Warn().Err(err).Msg("failed to load rate limiter config, using defaults")
-		rateLimiterConfig = config.DefaultRateLimiterConfig()
-	}
+	rateLimiterConfig := config.LoadRateLimiter()
 
 	rateLimiter := newRateLimiterByIP(&rateLimiterConfig)
 	router.Use(rateLimitMiddleware(rateLimiter))

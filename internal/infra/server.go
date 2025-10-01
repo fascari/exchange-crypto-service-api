@@ -16,7 +16,7 @@ const serverPort = ":8080"
 func startHTTPServer(app *App) *http.Server {
 	server := &http.Server{
 		Addr:    serverPort,
-		Handler: app.Router,
+		Handler: app.MainRouter,
 	}
 
 	go func() {

@@ -9,4 +9,5 @@ import (
 func setupMiddlewares(router *mux.Router, serviceName string) {
 	middleware.SetupOTEL(router, serviceName)
 	middleware.SetupRateLimiter(router)
+	middleware.SetupJWTAuth(router)
 }

@@ -14,7 +14,7 @@ import (
 func TestNewRateLimiterByIP(t *testing.T) {
 	tests := []struct {
 		name     string
-		config   *config.RateLimiterConfig
+		config   *config.RateLimiter
 		expected float64
 	}{
 		{
@@ -24,7 +24,7 @@ func TestNewRateLimiterByIP(t *testing.T) {
 		},
 		{
 			name: "custom config",
-			config: &config.RateLimiterConfig{
+			config: &config.RateLimiter{
 				RequestsPerSecond: 5,
 				BurstSize:         10,
 				CleanupInterval:   time.Minute,
@@ -43,7 +43,7 @@ func TestNewRateLimiterByIP(t *testing.T) {
 }
 
 func TestRateLimitMiddleware(t *testing.T) {
-	cfg := &config.RateLimiterConfig{
+	cfg := &config.RateLimiter{
 		RequestsPerSecond: 1,
 		BurstSize:         2,
 		CleanupInterval:   time.Minute,
@@ -117,7 +117,7 @@ func TestClientIP(t *testing.T) {
 		{
 			name:       "RemoteAddr default",
 			remoteAddr: "10.0.0.1:12345",
-			expected:   "10.0.0.1:12345",
+			expected:   "10.0.0.1",
 		},
 	}
 

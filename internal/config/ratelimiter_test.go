@@ -8,7 +8,7 @@ import (
 )
 
 func TestDefaultRateLimiterConfig(t *testing.T) {
-	config := DefaultRateLimiterConfig()
+	config := defaultRateLimiterConfig()
 
 	require.Equal(t, float64(10), config.RequestsPerSecond)
 	require.Equal(t, 20, config.BurstSize)

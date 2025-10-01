@@ -6,5 +6,5 @@ import (
 )
 
 func Health(app infra.App) {
-	app.Router.HandleFunc("/health", handler.HealthCheck).Methods("GET")
+	app.MainRouter.HandleFunc("/health", handler.HealthCheck).Methods("GET")
 }
