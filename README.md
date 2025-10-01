@@ -8,9 +8,23 @@ A API for cryptocurrency exchange operations, built in Go, following Clean Archi
 - **Liquibase** (database migration)
 - **Docker & Docker Compose** (containerization and orchestration)
 - **OpenTelemetry** (tracing and observability)
+- **Rate Limiting** (DDoS protection and traffic control)
 - **Mockery** (mock generation for testing)
 - **golangci-lint** (code linting and static analysis)
 - **Makefile** (command automation)
+
+## Features
+
+### 🛡️ Rate Limiting
+The API includes a built-in rate limiter to protect against DDoS attacks and ensure service stability under heavy load:
+
+- **IP-based rate limiting**: 10 requests per second per IP (configurable)
+- **Burst protection**: Allows bursts up to 20 requests (configurable)
+- **Automatic cleanup**: Memory-efficient with automatic cleanup of inactive limiters
+- **Flexible configuration**: Easily configurable via `env.yaml`
+- **Production-ready**: Thread-safe and thoroughly tested
+
+📖 **[Complete Rate Limiter Documentation](./RATE_LIMITER.md)**
 
 ## Project Structure
 - `cmd/api/main.go`: application entry point
@@ -64,6 +78,11 @@ make help
 - **POST /api/v1/transactions**: create transaction (deposit/withdrawal)
 - **GET /api/v1/transactions/daily?date=YYYY-MM-DD**: get daily transactions
 - **GET /health**: health check
+
+## Postman Collection
+
+The project includes a comprehensive Postman collection with example requests for all API endpoints.
+- `exchange-crypto.postman_collection.json` file from the project root
 
 ## Telemetry & Observability
 
