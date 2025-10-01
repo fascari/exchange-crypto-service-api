@@ -17,6 +17,8 @@ func loadJWTConfig() (JWT, error) {
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("./config")
 
+	viper.AutomaticEnv()
+
 	if err := viper.ReadInConfig(); err != nil {
 		return JWT{}, err
 	}

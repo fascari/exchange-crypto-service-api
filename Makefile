@@ -3,20 +3,38 @@
 help:
 	@echo "API SERVICE MAKEFILE"
 	@echo ""
-	@echo "COMMANDS:"
-	@echo " run-local     Run application locally"
-	@echo " fs            Fresh start containers"
+	@echo "🐳 DOCKER COMMANDS:"
+	@echo " run-docker    Run application via Docker containers"
 	@echo " build         Build containers with no cache"
+	@echo " fs            Fresh start containers"
 	@echo " down          Stop and remove containers"
+	@echo " restart       Restart API container"
+	@echo " logs          Show API container logs"
+	@echo " status        Show containers status"
+	@echo ""
+	@echo "🏃 DEVELOPMENT COMMANDS:"
+	@echo " run-local     Run application locally (Go binary)"
+	@echo " migrate       Run database migration"
+	@echo ""
+	@echo "🧪 TESTING & QUALITY:"
 	@echo " test          Run unit tests"
 	@echo " lint-code     Run golangci-lint"
-	@echo " migrate       Run database migration"
 	@echo ""
 
 run-local:
-	@echo "Starting the application"
-	docker-compose up -d
+	@echo "Starting dependencies..."
+	docker-compose up -d postgres otel-collector jaeger
+	@echo "Waiting for database to be ready..."
+	@sleep 5
+	@$(MAKE) migrate
+	@echo "Starting the application locally..."
 	go run cmd/api/*.go
+
+run-docker:
+	@echo "Starting all services via Docker..."
+	docker-compose up -d
+	@echo "API is running at http://localhost:8080"
+	@echo "Jaeger UI is available at http://localhost:16686"
 
 build:
 	docker-compose build --no-cache --force-rm --pull
@@ -24,10 +42,20 @@ build:
 fs:
 	docker-compose down
 	docker-compose up -d
-	@$(MAKE) migration
+	@echo "Fresh start completed. API is running at http://localhost:8080"
 
-down:
-	docker-compose down
+restart:
+	@echo "Restarting API container..."
+	docker-compose restart exchange-crypto-api
+	@echo "API container restarted"
+
+logs:
+	@echo "Showing API logs..."
+	docker-compose logs -f exchange-crypto-api
+
+status:
+	@echo "Containers status:"
+	docker-compose ps
 
 test:
 	@echo "🧪 Running tests..."

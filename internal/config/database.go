@@ -31,6 +31,8 @@ func loadDatabaseConfig() (Database, error) {
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("./config")
 
+	viper.AutomaticEnv()
+
 	if err := viper.ReadInConfig(); err != nil {
 		return Database{}, err
 	}

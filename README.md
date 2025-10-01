@@ -21,6 +21,9 @@ A API for cryptocurrency exchange operations, built in Go, following Clean Archi
 # Run application locally (starts containers + API)
 make run-local
 
+# Run complete application via Docker
+make run-docker
+
 # Fresh start (rebuild containers and run migrations)
 make fs
 
@@ -42,6 +45,23 @@ make down
 # Show help with available commands
 make help
 ```
+
+## 🐳 Docker
+
+This application is fully containerized using Docker Compose. You can run the entire stack (API + dependencies) with a single command.
+
+### Quick Docker Commands
+```bash
+# Start everything via Docker
+make run-docker
+
+# View logs and manage containers
+make logs
+make status
+make restart
+```
+
+**📋 For detailed Docker documentation, see [Docker Guide](./docs/DOCKER.md)**
 
 ## Project Structure
 - `cmd/api/main.go`: application entry point
@@ -65,6 +85,7 @@ make help
 - **[Authentication (JWT)](./docs/AUTHENTICATION.md)** - JWT token generation, validation, and usage
 - **[API Documentation](./docs/API.md)** - Endpoints, examples, and Postman collection
 - **[Development Guide](./docs/DEVELOPMENT.md)** - Testing, linting, and mock generation
+- **[Docker Guide](./docs/DOCKER.md)** - Complete Docker setup, troubleshooting, and deployment
 - **[Observability](./docs/OBSERVABILITY.md)** - Monitoring, tracing, and rate limiting
 
 ## Health Check

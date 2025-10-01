@@ -6,7 +6,7 @@ services:
       - postgres
     volumes:
       - ./liquibase/changelog:/liquibase/changelog
-    command: [ "--logLevel=debug", "--defaultsFile=/liquibase/changelog/local.properties", "status" ]
+    command: [ "--defaultsFile=/liquibase/changelog/local.properties", "update" ]
     networks:
       - app_network
 
@@ -50,6 +50,29 @@ services:
     networks:
       - app_network
 
+  exchange-crypto-api:
+    build: .
+    container_name: exchange-crypto-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_started
+      liquibase:
+        condition: service_completed_successfully
+    environment:
+      - DB_URL=postgres
+      - DB_PORT=5432
+      - DB_APP_USER=owner
+      - DB_APP_PASSWORD=owner123
+      - DB_NAME=exchange_crypto_local
+      - DB_SSL_MODE=disable
+      - DB_SCHEMA=exchange_crypto
+      - DB_MAX_IDLE_CONNECTIONS=10
+      - DB_MAX_OPEN_CONNECTIONS=100
+      - DB_MAX_LIFETIME_CONNECTIONS=60
+    networks:
+      - app_network
 
 networks:
   app_network:
