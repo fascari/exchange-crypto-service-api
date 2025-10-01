@@ -35,7 +35,9 @@ func (r Repository) FindDailyTransactions(ctx context.Context, startDate, endDat
 
 			err := r.db.WithContext(ctx).
 				Table("transactions t").
-				Select("e.name as exchange, DATE(t.created_at) as date, SUM(t.amount) as total_amount").
+				Select(`e.name as exchange, 
+					DATE(t.created_at) as date, 
+					SUM(CASE WHEN t.type = 'DEPOSIT' THEN t.amount ELSE -t.amount END) as total_amount`).
 				Joins("JOIN accounts a ON t.account_id = a.id").
 				Joins("JOIN exchanges e ON a.exchange_id = e.id").
 				Where("t.created_at BETWEEN ? AND ?", startDate, endDate).
