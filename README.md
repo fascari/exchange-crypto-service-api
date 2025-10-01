@@ -3,12 +3,13 @@
 A API for cryptocurrency exchange operations, built in Go, following Clean Architecture principles with integrated observability.
 
 ## Tech Stack
-- **Go** (>=1.25)
+- **Go** (>=1.24)
 - **PostgreSQL** (data persistence)
 - **Liquibase** (database migration)
 - **Docker & Docker Compose** (containerization and orchestration)
 - **OpenTelemetry** (tracing and observability)
 - **Mockery** (mock generation for testing)
+- **golangci-lint** (code linting and static analysis)
 - **Makefile** (command automation)
 
 ## Project Structure
@@ -86,6 +87,65 @@ Run all unit tests with coverage:
 ```bash
 make test
 ```
+
+### Code Linting with golangci-lint
+
+The project uses [golangci-lint](https://golangci-lint.run/) for code linting and static analysis to maintain code quality and consistency.
+
+#### Installation
+
+**Using Go install:**
+```bash
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+```
+
+**Using Homebrew (macOS):**
+```bash
+brew install golangci-lint
+```
+
+**Using Binary (Linux/Windows):**
+```bash
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+```
+
+#### Configuration
+
+The project includes a `.golangci.yml` configuration file that defines:
+- **Enabled linters**: Code quality, style, and security checks
+- **Disabled rules**: Project-specific exceptions
+- **File exclusions**: Generated files, vendor directories
+- **Severity levels**: Error vs warning classifications
+
+#### Running Linter
+
+To run the linter on the entire project:
+```bash
+make lint-code
+```
+
+To run golangci-lint directly:
+```bash
+# Run with default configuration
+golangci-lint run
+
+# Run with custom config file
+golangci-lint run --config=.golangci.yml
+
+# Run on specific directories
+golangci-lint run ./internal/... ./pkg/...
+
+# Run with verbose output
+golangci-lint run --verbose
+```
+
+#### Common Linting Issues
+
+- **Unused variables/imports**: Remove or use underscore `_` for intentionally unused
+- **Naming conventions**: Use camelCase for private, PascalCase for public
+- **Error handling**: Always check and handle errors appropriately
+- **Code complexity**: Keep functions simple and focused
+- **Documentation**: Add comments for exported functions and types
 
 ### Mockery - Mock Generation
 
