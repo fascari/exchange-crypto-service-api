@@ -7,6 +7,7 @@ import (
 
 	"exchange-crypto-service-api/internal/app/auth/usecase/generatetoken"
 	"exchange-crypto-service-api/pkg/apperror"
+	httpjson "exchange-crypto-service-api/pkg/http"
 
 	"github.com/gorilla/mux"
 )
@@ -45,10 +46,5 @@ func (h Handler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	if err = json.NewEncoder(w).Encode(toOutputPayload(response)); err != nil {
-		log.Error().Err(err).Msg("failed to encode response")
-		apperror.WriteError(w, http.StatusInternalServerError, err)
-	}
+	httpjson.WriteJSON(w, http.StatusCreated, toOutputPayload(response))
 }

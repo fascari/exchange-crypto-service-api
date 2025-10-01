@@ -1,12 +1,12 @@
 package createtransaction
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"exchange-crypto-service-api/internal/app/transaction/domain"
 	"exchange-crypto-service-api/internal/app/transaction/usecase/createtransaction"
+	httpjson "exchange-crypto-service-api/pkg/http"
 
 	"github.com/gorilla/mux"
 )
@@ -35,7 +35,7 @@ func (h Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var payload InputPayload
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+	if err := httpjson.ReadJSON(r, &payload); err != nil {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}

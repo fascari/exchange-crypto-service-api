@@ -1,12 +1,12 @@
 package createaccount
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"exchange-crypto-service-api/internal/app/account"
 	"exchange-crypto-service-api/internal/app/account/usecase/createaccount"
 	"exchange-crypto-service-api/pkg/apperror"
+	httpjson "exchange-crypto-service-api/pkg/http"
 
 	"github.com/gorilla/mux"
 )
@@ -29,7 +29,7 @@ func RegisterEndpoint(r *mux.Router, h Handler) {
 
 func (h Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	var payload InputPayload
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+	if err := httpjson.ReadJSON(r, &payload); err != nil {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
@@ -45,12 +45,7 @@ func (h Handler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	if err = json.NewEncoder(w).Encode(ToOutputPayload(createdAccount)); err != nil {
-		handleError(w, err)
-	}
+	httpjson.WriteJSON(w, http.StatusCreated, ToOutputPayload(createdAccount))
 }
 
 func handleError(w http.ResponseWriter, err error) {

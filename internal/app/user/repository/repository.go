@@ -78,7 +78,7 @@ func (r Repository) FindUserBalances(ctx context.Context, userID uint) (domain.U
 			}
 
 			if len(models) == 0 {
-				return nil, errors.New("user has no balances")
+				return nil, nil
 			}
 
 			result = toDomain(models)

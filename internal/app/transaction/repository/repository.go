@@ -27,7 +27,7 @@ func (r Repository) Create(ctx context.Context, transaction domain.Transaction) 
 }
 
 func (r Repository) FindDailyTransactions(ctx context.Context, startDate, endDate time.Time) ([]domain.DailyTransaction, error) {
-	var transactions []domain.DailyTransaction
+	transactions := make([]domain.DailyTransaction, 0)
 
 	err := telemetry.TraceRepository(ctx, "repository.find_daily_transactions",
 		func(ctx context.Context) ([]attribute.KeyValue, error) {

@@ -1,11 +1,11 @@
 package finduserbalance
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"exchange-crypto-service-api/internal/app/user/usecase/finduserbalance"
+	httpjson "exchange-crypto-service-api/pkg/http"
 
 	"github.com/gorilla/mux"
 )
@@ -41,10 +41,5 @@ func (h Handler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err = json.NewEncoder(w).Encode(userBalance); err != nil {
-		http.Error(w, "failed to encode response", http.StatusInternalServerError)
-	}
+	httpjson.WriteJSON(w, http.StatusOK, ToOutputPayload(userBalance))
 }

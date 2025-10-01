@@ -1,11 +1,10 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
-	"github.com/rs/zerolog/log"
+	httpjson "exchange-crypto-service-api/pkg/http"
 )
 
 type HealthResponse struct {
@@ -23,12 +22,5 @@ func HealthCheck(w http.ResponseWriter, _ *http.Request) {
 		Timestamp: time.Now(),
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Error().Err(err).Msg("failed to encode health check response")
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
+	httpjson.WriteJSON(w, http.StatusOK, response)
 }

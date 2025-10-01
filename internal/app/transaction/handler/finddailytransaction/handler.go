@@ -1,13 +1,13 @@
 package finddailytransaction
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"exchange-crypto-service-api/internal/app/transaction/usecase/finddailytransaction"
+	httpjson "exchange-crypto-service-api/pkg/http"
 
 	"github.com/gorilla/mux"
 )
@@ -43,13 +43,13 @@ func (h Handler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dailyTrans, err := h.useCase.Execute(r.Context(), startDate, endDate)
+	data, err := h.useCase.Execute(r.Context(), startDate, endDate)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	writeJSONResponse(w, ToOutputPayloads(dailyTrans))
+	httpjson.WriteJSON(w, http.StatusOK, ToOutputPayloads(data))
 }
 
 func validateRequiredParams(startDate, endDate string) error {
@@ -79,13 +79,4 @@ func parseDate(dateStr, paramName string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("invalid %s format, use YYYY-MM-DD", paramName)
 	}
 	return date, nil
-}
-
-func writeJSONResponse(w http.ResponseWriter, data any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		http.Error(w, "failed to encode response", http.StatusInternalServerError)
-	}
 }
