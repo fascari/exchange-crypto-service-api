@@ -3,6 +3,9 @@ package http
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
+
+	"exchange-crypto-service-api/pkg/apperror"
 
 	"github.com/rs/zerolog/log"
 )
@@ -26,4 +29,11 @@ func ReadJSON(r *http.Request, payload any) error {
 		return err
 	}
 	return nil
+}
+
+// WriteError writes an error response as JSON
+func WriteError(w http.ResponseWriter, statusCode int, err error) {
+	statusText := strings.ToUpper(strings.ReplaceAll(http.StatusText(statusCode), " ", "_"))
+	appErr := apperror.New(statusText, "%s", err.Error())
+	WriteJSON(w, statusCode, appErr)
 }

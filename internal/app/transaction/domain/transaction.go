@@ -15,10 +15,14 @@ type (
 	TransactionType string
 
 	Transaction struct {
-		ID        uint
-		AccountID uint
-		Type      TransactionType
-		Amount    float64
+		ID              uint
+		AccountID       uint
+		Type            TransactionType
+		Amount          float64
+		PreviousBalance float64
+		NewBalance      float64
+		TransactionID   string
+		IdempotencyKey  string
 	}
 
 	DailyTransaction struct {

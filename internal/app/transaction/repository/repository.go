@@ -2,14 +2,17 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
+	"exchange-crypto-service-api/internal/app/transaction"
 	"exchange-crypto-service-api/internal/app/transaction/domain"
 	"exchange-crypto-service-api/internal/database"
 	"exchange-crypto-service-api/pkg/telemetry"
 
 	"go.opentelemetry.io/otel/attribute"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Repository struct {
@@ -22,12 +25,28 @@ func New(db *gorm.DB) Repository {
 	}
 }
 
-func (r Repository) Create(ctx context.Context, transaction domain.Transaction) error {
-	model := fromDomain(transaction)
+func (r Repository) Create(ctx context.Context, tr domain.Transaction) error {
+	model := fromDomain(tr)
 
 	db := r.db
 	if tx := database.TXFromContext(ctx); tx != nil {
 		db = tx
+	}
+
+	if model.IdempotencyKey != "" {
+		var existing transactionModel
+		err := db.WithContext(ctx).
+			Clauses(clause.Locking{Strength: clause.LockingStrengthUpdate}).
+			Where("idempotency_key = ? AND account_id = ?", model.IdempotencyKey, model.AccountID).
+			First(&existing).Error
+
+		if err == nil {
+			return transaction.ErrDuplicateIdempotencyKey{TransactionID: existing.TransactionID}
+		}
+
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
 	}
 
 	return db.WithContext(ctx).Create(&model).Error

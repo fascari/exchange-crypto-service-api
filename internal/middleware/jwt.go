@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"exchange-crypto-service-api/internal/jwt"
-	"exchange-crypto-service-api/pkg/apperror"
+	httpjson "exchange-crypto-service-api/pkg/http"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -31,7 +31,7 @@ func middleware() func(http.Handler) http.Handler {
 func handleJWTAuth(w http.ResponseWriter, r *http.Request, next http.Handler) {
 	token := extractBearerToken(r)
 	if token == "" {
-		apperror.WriteError(w, http.StatusUnauthorized, errors.New("bearer token required"))
+		httpjson.WriteError(w, http.StatusUnauthorized, errors.New("bearer token required"))
 		return
 	}
 
@@ -49,7 +49,7 @@ func validateAndSetContext(w http.ResponseWriter, r *http.Request, next http.Han
 	jwtService := jwt.Instance()
 	claims, err := jwtService.ValidateToken(token)
 	if err != nil {
-		apperror.WriteError(w, http.StatusUnauthorized, err)
+		httpjson.WriteError(w, http.StatusUnauthorized, err)
 		return false
 	}
 

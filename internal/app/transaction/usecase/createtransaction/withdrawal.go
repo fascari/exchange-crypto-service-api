@@ -8,12 +8,18 @@ import (
 	"exchange-crypto-service-api/internal/app/transaction/domain"
 )
 
-func (uc UseCase) Withdrawal(ctx context.Context, accountID uint, amount float64) error {
+func (uc UseCase) Withdrawal(ctx context.Context, accountID uint, amount float64, idempotencyKey string) (string, error) {
 	if err := validateAmount(amount); err != nil {
-		return err
+		return "", err
 	}
 
-	return uc.accountRepository.ExecuteInTransaction(ctx, func(ctx context.Context) error {
+	if err := validateIdempotencyKey(idempotencyKey); err != nil {
+		return "", err
+	}
+
+	transactionID := generateTransactionID()
+
+	err := uc.accountRepository.ExecuteInTransaction(ctx, func(ctx context.Context) error {
 		account, err := uc.accountRepository.FindByID(ctx, accountID)
 		if err != nil {
 			return err
@@ -27,18 +33,28 @@ func (uc UseCase) Withdrawal(ctx context.Context, accountID uint, amount float64
 			return err
 		}
 
-		account.Balance = calcBalance(account.Balance, amount, domain.Withdrawal)
+		previousBalance := account.Balance
+		newBalance := calcBalance(account.Balance, amount, domain.Withdrawal)
+		account.Balance = newBalance
 
 		if err := uc.accountRepository.Update(ctx, account); err != nil {
 			return err
 		}
 
-		return uc.transactionRepository.Create(ctx, domain.Transaction{
-			AccountID: accountID,
-			Type:      domain.Withdrawal,
-			Amount:    amount,
-		})
+		transaction := domain.Transaction{
+			AccountID:       accountID,
+			Type:            domain.Withdrawal,
+			Amount:          amount,
+			PreviousBalance: previousBalance,
+			NewBalance:      newBalance,
+			TransactionID:   transactionID,
+			IdempotencyKey:  idempotencyKey,
+		}
+
+		return uc.transactionRepository.Create(ctx, transaction)
 	})
+
+	return transactionID, err
 }
 
 func validateBalance(account accountdomain.Account, amount float64) error {

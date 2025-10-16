@@ -1,6 +1,7 @@
 package createtransaction
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -30,27 +31,31 @@ func (h Handler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	accountID, err := strconv.ParseUint(vars["accountID"], 10, 32)
 	if err != nil {
-		http.Error(w, "invalid account ID", http.StatusBadRequest)
+		httpjson.WriteError(w, http.StatusBadRequest, errors.New("invalid account ID"))
 		return
 	}
 
 	var payload InputPayload
 	if err := httpjson.ReadJSON(r, &payload); err != nil {
-		http.Error(w, "invalid payload", http.StatusBadRequest)
+		httpjson.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 
 	transactionType, err := domain.ParseTransactionType(vars["transactionType"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httpjson.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	if err := h.useCase.Execute(r.Context(), transactionType, uint(accountID), payload.Amount); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	transactionID, err := h.useCase.Execute(r.Context(), transactionType, uint(accountID), payload.Amount, payload.IdempotencyKey)
+	if err != nil {
+		httpjson.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNoContent)
+	response := OutputPayload{
+		TransactionID: transactionID,
+	}
+
+	httpjson.WriteJSON(w, http.StatusCreated, response)
 }

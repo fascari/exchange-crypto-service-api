@@ -8,6 +8,8 @@ import (
 	accountdomain "exchange-crypto-service-api/internal/app/account/domain"
 	exchangedomain "exchange-crypto-service-api/internal/app/exchange/domain"
 	"exchange-crypto-service-api/internal/app/transaction/domain"
+
+	"github.com/google/uuid"
 )
 
 type (
@@ -40,16 +42,32 @@ func New(accountRepository AccountRepository, exchangeRepository ExchangeReposit
 	}
 }
 
-func (uc UseCase) Execute(ctx context.Context, transactionType domain.TransactionType, accountID uint, amount float64) error {
+func (uc UseCase) Execute(ctx context.Context, transactionType domain.TransactionType, accountID uint, amount float64, idempotencyKey string) (string, error) {
 	if transactionType == domain.Deposit {
-		return uc.Deposit(ctx, accountID, amount)
+		return uc.Deposit(ctx, accountID, amount, idempotencyKey)
 	}
 
 	if transactionType == domain.Withdrawal {
-		return uc.Withdrawal(ctx, accountID, amount)
+		return uc.Withdrawal(ctx, accountID, amount, idempotencyKey)
 	}
 
-	return errors.New("invalid transaction type")
+	return "", fmt.Errorf("invalid transaction type %s", transactionType)
+}
+
+func generateTransactionID() string {
+	return uuid.Must(uuid.NewV7()).String()
+}
+
+func validateIdempotencyKey(idempotencyKey string) error {
+	if idempotencyKey == "" {
+		return nil
+	}
+
+	if _, err := uuid.Parse(idempotencyKey); err != nil {
+		return errors.New("invalid idempotencyKey format: must be a valid UUID")
+	}
+
+	return nil
 }
 
 func validateAmount(amount float64) error {
