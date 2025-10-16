@@ -11,18 +11,26 @@ func (uc UseCase) Deposit(ctx context.Context, accountID uint, amount float64) e
 		return err
 	}
 
-	account, err := uc.accountRepository.FindByID(ctx, accountID)
-	if err != nil {
-		return err
-	}
+	return uc.accountRepository.ExecuteInTransaction(ctx, func(ctx context.Context) error {
+		account, err := uc.accountRepository.FindByID(ctx, accountID)
+		if err != nil {
+			return err
+		}
 
-	if err := uc.validateTransferLimit(ctx, account.ExchangeID, amount); err != nil {
-		return err
-	}
+		if err := uc.validateTransferLimit(ctx, account.ExchangeID, amount); err != nil {
+			return err
+		}
 
-	if err := uc.updateBalance(ctx, account, amount, domain.Deposit); err != nil {
-		return err
-	}
+		account.Balance = calcBalance(account.Balance, amount, domain.Deposit)
 
-	return uc.createTransaction(ctx, accountID, amount, domain.Deposit)
+		if err := uc.accountRepository.Update(ctx, account); err != nil {
+			return err
+		}
+
+		return uc.transactionRepository.Create(ctx, domain.Transaction{
+			AccountID: accountID,
+			Type:      domain.Deposit,
+			Amount:    amount,
+		})
+	})
 }

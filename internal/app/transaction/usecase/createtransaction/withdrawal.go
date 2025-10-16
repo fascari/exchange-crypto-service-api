@@ -13,24 +13,32 @@ func (uc UseCase) Withdrawal(ctx context.Context, accountID uint, amount float64
 		return err
 	}
 
-	account, err := uc.accountRepository.FindByID(ctx, accountID)
-	if err != nil {
-		return err
-	}
+	return uc.accountRepository.ExecuteInTransaction(ctx, func(ctx context.Context) error {
+		account, err := uc.accountRepository.FindByID(ctx, accountID)
+		if err != nil {
+			return err
+		}
 
-	if err := validateBalance(account, amount); err != nil {
-		return err
-	}
+		if err := validateBalance(account, amount); err != nil {
+			return err
+		}
 
-	if err := uc.validateTransferLimit(ctx, account.ExchangeID, amount); err != nil {
-		return err
-	}
+		if err := uc.validateTransferLimit(ctx, account.ExchangeID, amount); err != nil {
+			return err
+		}
 
-	if err := uc.updateBalance(ctx, account, amount, domain.Withdrawal); err != nil {
-		return err
-	}
+		account.Balance = calcBalance(account.Balance, amount, domain.Withdrawal)
 
-	return uc.createTransaction(ctx, accountID, amount, domain.Withdrawal)
+		if err := uc.accountRepository.Update(ctx, account); err != nil {
+			return err
+		}
+
+		return uc.transactionRepository.Create(ctx, domain.Transaction{
+			AccountID: accountID,
+			Type:      domain.Withdrawal,
+			Amount:    amount,
+		})
+	})
 }
 
 func validateBalance(account accountdomain.Account, amount float64) error {

@@ -14,6 +14,7 @@ type (
 	AccountRepository interface {
 		FindByID(ctx context.Context, accountID uint) (accountdomain.Account, error)
 		Update(ctx context.Context, account accountdomain.Account) error
+		ExecuteInTransaction(ctx context.Context, fn func(ctx context.Context) error) error
 	}
 
 	ExchangeRepository interface {
@@ -68,21 +69,6 @@ func (uc UseCase) validateTransferLimit(ctx context.Context, exchangeID uint, am
 		return fmt.Errorf("amount %.2f exceeds exchange maximum transfer limit of %.2f", amount, exchange.MaxTransferAmount)
 	}
 	return nil
-}
-
-func (uc UseCase) updateBalance(ctx context.Context, account accountdomain.Account, amount float64, transactionType domain.TransactionType) error {
-	account.Balance = calcBalance(account.Balance, amount, transactionType)
-	return uc.accountRepository.Update(ctx, account)
-}
-
-func (uc UseCase) createTransaction(ctx context.Context, accountID uint, amount float64, transactionType domain.TransactionType) error {
-	transaction := domain.Transaction{
-		AccountID: accountID,
-		Type:      transactionType,
-		Amount:    amount,
-	}
-
-	return uc.transactionRepository.Create(ctx, transaction)
 }
 
 func calcBalance(currentBalance, amount float64, transactionType domain.TransactionType) float64 {

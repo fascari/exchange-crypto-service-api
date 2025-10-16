@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"exchange-crypto-service-api/internal/app/transaction/domain"
+	"exchange-crypto-service-api/internal/database"
 	"exchange-crypto-service-api/pkg/telemetry"
 
 	"go.opentelemetry.io/otel/attribute"
@@ -23,7 +24,13 @@ func New(db *gorm.DB) Repository {
 
 func (r Repository) Create(ctx context.Context, transaction domain.Transaction) error {
 	model := fromDomain(transaction)
-	return r.db.WithContext(ctx).Create(&model).Error
+
+	db := r.db
+	if tx := database.TXFromContext(ctx); tx != nil {
+		db = tx
+	}
+
+	return db.WithContext(ctx).Create(&model).Error
 }
 
 func (r Repository) FindDailyTransactions(ctx context.Context, startDate, endDate time.Time) ([]domain.DailyTransaction, error) {
