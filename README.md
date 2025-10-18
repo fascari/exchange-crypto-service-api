@@ -10,6 +10,7 @@ A API for cryptocurrency exchange operations, built in Go, following Clean Archi
 - **OpenTelemetry** (tracing and observability)
 - **JWT Authentication** (secure token-based authentication)
 - **Rate Limiting** (DDoS protection and traffic control)
+- **Uber/FX** (dependency injection framework)
 - **Mockery** (mock generation for testing)
 - **golangci-lint** (code linting and static analysis)
 - **Makefile** (command automation)
@@ -75,6 +76,26 @@ make restart
 ## Configuration
 - Environment variables can be defined in `env.yaml`
 
+### Environment Variables
+
+| Variable | Description | Default | Values |
+|----------|-------------|---------|--------|
+| `FX_VERBOSE` | Enable verbose Uber/FX dependency injection logs | `false` | `true`, `false` |
+| `DB_URL` | Database host | `postgres` | hostname |
+| `DB_PORT` | Database port | `5432` | port number |
+| `DB_APP_USER` | Database user | `owner` | username |
+| `DB_APP_PASSWORD` | Database password | `owner123` | password |
+| `DB_NAME` | Database name | `exchange_crypto_local` | database name |
+| `DB_SSL_MODE` | PostgreSQL SSL mode | `disable` | `disable`, `require` |
+| `DB_SCHEMA` | Database schema | `exchange_crypto` | schema name |
+
+**Example: Enable FX verbose logs for debugging**
+```bash
+FX_VERBOSE=true go run cmd/api/main.go
+# or
+FX_VERBOSE=true make run-local
+```
+
 ## Database
 - PostgreSQL is used as the main database
 - Automatic migrations via Liquibase (`liquibase/changelog/migrations/*.sql`)
@@ -82,6 +103,7 @@ make restart
 ## Documentation
 
 📚 **Detailed Documentation:**
+- **[Dependency Injection (Uber/FX)](./docs/DEPENDENCY_INJECTION.md)** - DI architecture and module structure
 - **[Authentication (JWT)](./docs/AUTHENTICATION.md)** - JWT token generation, validation, and usage
 - **[API Documentation](./docs/API.md)** - Endpoints, examples, and Postman collection
 - **[Development Guide](./docs/DEVELOPMENT.md)** - Testing, linting, and mock generation

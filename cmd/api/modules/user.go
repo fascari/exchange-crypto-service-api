@@ -3,18 +3,47 @@ package modules
 import (
 	"exchange-crypto-service-api/internal/app/user/handler/createuser"
 	"exchange-crypto-service-api/internal/app/user/handler/finduserbalance"
+	userrepo "exchange-crypto-service-api/internal/app/user/repository"
 	createuseruc "exchange-crypto-service-api/internal/app/user/usecase/createuser"
 	finduserbalanceuc "exchange-crypto-service-api/internal/app/user/usecase/finduserbalance"
-	"exchange-crypto-service-api/internal/deps"
-	"exchange-crypto-service-api/internal/infra"
+
+	"go.uber.org/fx"
 )
 
-func User(app infra.App, dep deps.Dependencies) {
-	repository := dep.Repositories.User
+var userFactories = fx.Provide(
+	// repositories
+	userrepo.New,
 
-	createUserUC := createuseruc.New(repository)
-	createuser.RegisterEndpoint(app.Router, createuser.NewHandler(createUserUC))
+	// use cases
+	createuseruc.New,
+	finduserbalanceuc.New,
 
-	findUserBalanceUC := finduserbalanceuc.New(repository)
-	finduserbalance.RegisterEndpoint(app.Router, finduserbalance.NewHandler(findUserBalanceUC))
-}
+	// handlers
+	createuser.NewHandler,
+	finduserbalance.NewHandler,
+)
+
+var userDependencies = fx.Provide(
+	// repositories
+	func(repo userrepo.Repository) createuseruc.Repository {
+		return repo
+	},
+	func(repo userrepo.Repository) finduserbalanceuc.Repository {
+		return repo
+	},
+)
+
+var userInvokes = fx.Invoke(
+	func(params RouterParams, h createuser.Handler) {
+		createuser.RegisterEndpoint(params.APIRouter, h)
+	},
+	func(params RouterParams, h finduserbalance.Handler) {
+		finduserbalance.RegisterEndpoint(params.APIRouter, h)
+	},
+)
+
+var User = fx.Options(
+	userFactories,
+	userDependencies,
+	userInvokes,
+)

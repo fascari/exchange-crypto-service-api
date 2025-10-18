@@ -5,6 +5,7 @@ help:
 	@echo ""
 	@echo "🐳 DOCKER COMMANDS:"
 	@echo " run-docker    Run application via Docker containers"
+	@echo " run-db        Run only PostgreSQL database"
 	@echo " build         Build containers with no cache"
 	@echo " fs            Fresh start containers"
 	@echo " down          Stop and remove containers"
@@ -21,9 +22,14 @@ help:
 	@echo " lint-code     Run golangci-lint"
 	@echo ""
 
+run-db:
+	@echo "Starting PostgreSQL database..."
+	docker compose up -d postgres
+	@echo "✅ PostgreSQL is ready at localhost:5435"
+
 run-local:
 	@echo "Starting dependencies..."
-	docker-compose up -d postgres otel-collector jaeger
+	docker compose up -d postgres otel-collector jaeger
 	@echo "Waiting for database to be ready..."
 	@sleep 5
 	@$(MAKE) migrate
@@ -32,30 +38,30 @@ run-local:
 
 run-docker:
 	@echo "Starting all services via Docker..."
-	docker-compose up -d
+	docker compose up -d
 	@echo "API is running at http://localhost:8080"
 	@echo "Jaeger UI is available at http://localhost:16686"
 
 build:
-	docker-compose build --no-cache --force-rm --pull
+	docker compose build --no-cache --force-rm --pull
 
 fs:
-	docker-compose down
-	docker-compose up -d
+	docker compose down
+	docker compose up -d
 	@echo "Fresh start completed. API is running at http://localhost:8080"
 
 restart:
 	@echo "Restarting API container..."
-	docker-compose restart exchange-crypto-api
+	docker compose restart exchange-crypto-api
 	@echo "API container restarted"
 
 logs:
 	@echo "Showing API logs..."
-	docker-compose logs -f exchange-crypto-api
+	docker compose logs -f exchange-crypto-api
 
 status:
 	@echo "Containers status:"
-	docker-compose ps
+	docker compose ps
 
 test:
 	@echo "🧪 Running tests..."
@@ -65,7 +71,8 @@ test:
 	@echo "Coverage report generated: coverage.html"
 
 migrate:
-	docker-compose run --rm liquibase liquibase --logLevel=info --defaultsFile=/liquibase/changelog/local.properties update
+	@docker compose run --rm liquibase liquibase --logLevel=warning --defaultsFile=/liquibase/changelog/local.properties update
+	@echo "✅ Migration completed"
 
 lint-code:
 	@echo "Running golangci-lint..."

@@ -2,24 +2,33 @@ package main
 
 import (
 	"exchange-crypto-service-api/cmd/api/modules"
-	"exchange-crypto-service-api/internal/deps"
-	"exchange-crypto-service-api/internal/infra"
+	"exchange-crypto-service-api/internal/bootstrap"
+	"exchange-crypto-service-api/internal/jwt"
+	"exchange-crypto-service-api/pkg/logger"
+
+	"go.uber.org/fx"
 )
 
 func main() {
-	app := setupApp()
-	app.Start()
-}
+	logger.Init()
+	jwt.Initialize()
 
-func setupApp() infra.App {
-	app := modules.NewApp()
-	dependencies := deps.New(app)
+	app := fx.New(
+		bootstrap.Logger(),
+		// Infrastructure
+		bootstrap.Config,
+		bootstrap.Database,
+		bootstrap.Telemetry,
+		bootstrap.Router,
+		bootstrap.Server,
+		// Business Modules
+		modules.Health,
+		modules.Exchange,
+		modules.User,
+		modules.Auth,
+		modules.Account,
+		modules.Transaction,
+	)
 
-	modules.Health(app)
-	modules.Auth(app, dependencies)
-	modules.User(app, dependencies)
-	modules.Account(app, dependencies)
-	modules.Transaction(app, dependencies)
-
-	return app
+	app.Run()
 }

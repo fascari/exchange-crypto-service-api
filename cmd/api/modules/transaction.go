@@ -1,18 +1,57 @@
 package modules
 
 import (
+	accountrepo "exchange-crypto-service-api/internal/app/account/repository"
+	exchangerepo "exchange-crypto-service-api/internal/app/exchange/repository"
 	"exchange-crypto-service-api/internal/app/transaction/handler/createtransaction"
 	"exchange-crypto-service-api/internal/app/transaction/handler/finddailytransaction"
+	transrepo "exchange-crypto-service-api/internal/app/transaction/repository"
 	createtrantuc "exchange-crypto-service-api/internal/app/transaction/usecase/createtransaction"
 	finddailytransactionuc "exchange-crypto-service-api/internal/app/transaction/usecase/finddailytransaction"
-	"exchange-crypto-service-api/internal/deps"
-	"exchange-crypto-service-api/internal/infra"
+
+	"go.uber.org/fx"
 )
 
-func Transaction(app infra.App, dep deps.Dependencies) {
-	useCase := createtrantuc.New(dep.Repositories.Account, dep.Repositories.Exchange, dep.Repositories.Transaction)
-	createtransaction.RegisterEndpoint(app.Router, createtransaction.NewHandler(useCase))
+var transactionFactories = fx.Provide(
+	// repositories
+	transrepo.New,
 
-	findDailyTransUC := finddailytransactionuc.New(dep.Repositories.Transaction)
-	finddailytransaction.RegisterEndpoint(app.Router, finddailytransaction.NewHandler(findDailyTransUC))
-}
+	// use cases
+	createtrantuc.New,
+	finddailytransactionuc.New,
+
+	// handlers
+	createtransaction.NewHandler,
+	finddailytransaction.NewHandler,
+)
+
+var transactionDependencies = fx.Provide(
+	// repositories
+	func(repo accountrepo.Repository) createtrantuc.AccountRepository {
+		return repo
+	},
+	func(repo exchangerepo.Repository) createtrantuc.ExchangeRepository {
+		return repo
+	},
+	func(repo transrepo.Repository) createtrantuc.TransactionRepository {
+		return repo
+	},
+	func(repo transrepo.Repository) finddailytransactionuc.Repository {
+		return repo
+	},
+)
+
+var transactionInvokes = fx.Invoke(
+	func(params RouterParams, h createtransaction.Handler) {
+		createtransaction.RegisterEndpoint(params.APIRouter, h)
+	},
+	func(params RouterParams, h finddailytransaction.Handler) {
+		finddailytransaction.RegisterEndpoint(params.APIRouter, h)
+	},
+)
+
+var Transaction = fx.Options(
+	transactionFactories,
+	transactionDependencies,
+	transactionInvokes,
+)

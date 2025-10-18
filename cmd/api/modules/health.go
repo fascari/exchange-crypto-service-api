@@ -1,10 +1,17 @@
 package modules
 
 import (
-	"exchange-crypto-service-api/internal/app/health/handler"
-	"exchange-crypto-service-api/internal/infra"
+	healthhandler "exchange-crypto-service-api/internal/app/health/handler"
+
+	"go.uber.org/fx"
 )
 
-func Health(app infra.App) {
-	app.MainRouter.HandleFunc("/health", handler.HealthCheck).Methods("GET")
-}
+var healthInvokes = fx.Invoke(
+	func(params RouterParams) {
+		params.Router.HandleFunc("/health", healthhandler.HealthCheck).Methods("GET")
+	},
+)
+
+var Health = fx.Options(
+	healthInvokes,
+)

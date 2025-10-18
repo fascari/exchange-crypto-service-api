@@ -61,6 +61,7 @@ services:
       liquibase:
         condition: service_completed_successfully
     environment:
+      - FX_VERBOSE=false
       - DB_URL=postgres
       - DB_PORT=5432
       - DB_APP_USER=owner
