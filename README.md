@@ -6,6 +6,8 @@ A API for cryptocurrency exchange operations, built in Go, following Clean Archi
 - **Go** (>=1.24)
 - **PostgreSQL** (data persistence)
 - **Liquibase** (database migration)
+- **Testcontainers** (integration tests)
+- **Test fixtures** (test data management)
 - **Docker & Docker Compose** (containerization and orchestration)
 - **OpenTelemetry** (tracing and observability)
 - **JWT Authentication** (secure token-based authentication)
@@ -119,3 +121,5 @@ curl http://localhost:8080/health
 - Check the Makefile: `make help`
 - Review the documentation files in `/docs`
 - Import the Postman collection for API examples
+
+

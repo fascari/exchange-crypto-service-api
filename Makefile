@@ -18,8 +18,9 @@ help:
 	@echo " migrate       Run database migration"
 	@echo ""
 	@echo "🧪 TESTING & QUALITY:"
-	@echo " test          Run unit tests"
-	@echo " lint-code     Run golangci-lint"
+	@echo " test              Run unit tests"
+	@echo " test-integration  Run integration tests"
+	@echo " lint-code         Run golangci-lint"
 	@echo ""
 
 run-db:
@@ -69,6 +70,11 @@ test:
 	@echo "📊 Generating coverage report..."
 	@go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report generated: coverage.html"
+
+test-integration:
+	@echo "🧪 Running integration tests..."
+	@go test -v ./internal/... -count=1 -tags=integration
+	@echo "✅ Integration tests completed"
 
 migrate:
 	@docker compose run --rm liquibase liquibase --logLevel=warning --defaultsFile=/liquibase/changelog/local.properties update

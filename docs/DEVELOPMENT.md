@@ -114,3 +114,44 @@ result, err := useCase.Execute(context.Background(), inputAccount)
 - **Handler tests**: Use mocks from `usecase/<module>/mocks/`
 - **UseCase tests**: Mock repository interfaces directly
 - **Repository tests**: Use real database (SQLite in-memory for tests)
+
+### Integration Tests
+
+The project includes a comprehensive integration test suite that uses [testcontainers-go](https://golang.testcontainers.org/) and [go-testfixtures](https://github.com/go-testfixtures/testfixtures) to provide isolated test environments.
+
+#### Features
+- **[Testcontainers](https://golang.testcontainers.org/features/)**: Automatically manages isolated PostgreSQL instances for testing
+- **[Test Fixtures](https://github.com/go-testfixtures/testfixtures#usage)**: Provides utilities for loading test data
+- **Isolated Environment**: Each test runs in its own containerized database
+- **Automatic Cleanup**: Test containers are automatically removed after tests complete
+
+#### Running Integration Tests
+```bash
+# Run only integration tests
+make test-integration
+
+# Run all tests including integration
+make test
+```
+
+#### Writing Integration Tests
+Integration tests are located in `internal/testing/integration`. The test suite provides:
+
+```go
+// Example of an integration test
+func TestUserRepository_Integration(t *testing.T) {
+    suite.Run(t, new(MySuite))
+}
+
+type MySuite struct {
+    suite.Suite
+    db *sql.DB
+}
+
+func (s *MySuite) SetupSuite() {
+    // Suite setup is handled automatically
+    // Database container is provisioned
+    // Migrations are applied
+}
+```
+
