@@ -12,7 +12,6 @@ import (
 
 	"go.opentelemetry.io/otel/attribute"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type Repository struct {
@@ -25,28 +24,37 @@ func New(db *gorm.DB) Repository {
 	}
 }
 
+func (r Repository) CheckIdempotency(ctx context.Context, accountID uint, idempotencyKey string) error {
+	db := r.db
+	if tx := database.TXFromContext(ctx); tx != nil {
+		db = tx
+	}
+
+	// Check if transaction with this idempotency key already exists
+	// The UNIQUE constraint (account_id, idempotency_key) provides the ultimate protection
+	// against race conditions in distributed systems
+	var existing transactionModel
+	err := db.WithContext(ctx).
+		Where("idempotency_key = ? AND account_id = ?", idempotencyKey, accountID).
+		First(&existing).Error
+
+	if err == nil {
+		return transaction.ErrDuplicateIdempotencyKey{TransactionID: existing.TransactionID}
+	}
+
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	return nil
+}
+
 func (r Repository) Create(ctx context.Context, tr domain.Transaction) error {
 	model := fromDomain(tr)
 
 	db := r.db
 	if tx := database.TXFromContext(ctx); tx != nil {
 		db = tx
-	}
-
-	if model.IdempotencyKey != "" {
-		var existing transactionModel
-		err := db.WithContext(ctx).
-			Clauses(clause.Locking{Strength: clause.LockingStrengthUpdate}).
-			Where("idempotency_key = ? AND account_id = ?", model.IdempotencyKey, model.AccountID).
-			First(&existing).Error
-
-		if err == nil {
-			return transaction.ErrDuplicateIdempotencyKey{TransactionID: existing.TransactionID}
-		}
-
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return err
-		}
 	}
 
 	return db.WithContext(ctx).Create(&model).Error
