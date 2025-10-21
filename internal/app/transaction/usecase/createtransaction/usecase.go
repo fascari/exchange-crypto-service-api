@@ -72,10 +72,14 @@ func (uc UseCase) processTransaction(
 		opt(cfg)
 	}
 
+	if err := uc.checkIdempotency(ctx, accountID, idempotencyKey); err != nil {
+		return "", err
+	}
+
 	transactionID := generateTransactionID()
 
 	err := uc.accountRepository.ExecuteInTransaction(ctx, func(ctx context.Context) error {
-		return uc.executeTransaction(ctx, accountID, amount, transactionType, transactionID, idempotencyKey, cfg)
+		return uc.executeTransaction(ctx, accountID, amount, transactionType, transactionID, idempotencyKey, *cfg)
 	})
 
 	return transactionID, err
@@ -88,12 +92,8 @@ func (uc UseCase) executeTransaction(
 	transactionType domain.TransactionType,
 	transactionID string,
 	idempotencyKey string,
-	cfg *transactionConfig,
+	cfg transactionConfig,
 ) error {
-	if err := uc.checkIdempotency(ctx, accountID, idempotencyKey); err != nil {
-		return err
-	}
-
 	account, err := uc.accountRepository.FindByID(ctx, accountID)
 	if err != nil {
 		return err
@@ -103,11 +103,11 @@ func (uc UseCase) executeTransaction(
 		return err
 	}
 
+	previousBalance := account.Balance
+
 	if err := uc.updateAccountBalance(ctx, &account, amount, transactionType); err != nil {
 		return err
 	}
-
-	previousBalance := account.Balance - calcBalance(account.Balance, -amount, transactionType)
 
 	return uc.transactionRepository.Create(ctx, domain.Transaction{
 		AccountID:       accountID,
@@ -127,7 +127,7 @@ func (uc UseCase) checkIdempotency(ctx context.Context, accountID uint, idempote
 	return uc.transactionRepository.CheckIdempotency(ctx, accountID, idempotencyKey)
 }
 
-func (uc UseCase) validateTransaction(ctx context.Context, account accountdomain.Account, amount float64, cfg *transactionConfig) error {
+func (uc UseCase) validateTransaction(ctx context.Context, account accountdomain.Account, amount float64, cfg transactionConfig) error {
 	if cfg.validator != nil {
 		if err := cfg.validator(account, amount); err != nil {
 			return err

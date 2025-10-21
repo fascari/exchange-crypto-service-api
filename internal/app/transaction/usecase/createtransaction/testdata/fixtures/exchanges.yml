@@ -1,0 +1,14 @@
+- id: 1
+  name: Binance
+  minimum_age: 18
+  maximum_transfer_amount: 100000.00
+  created_at: 2024-01-01T00:00:00Z
+  updated_at: 2024-01-01T00:00:00Z
+
+- id: 2
+  name: Coinbase
+  minimum_age: 18
+  maximum_transfer_amount: 50000.00
+  created_at: 2024-01-01T00:00:00Z
+  updated_at: 2024-01-01T00:00:00Z
+
